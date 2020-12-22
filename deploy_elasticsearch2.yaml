@@ -1,0 +1,32 @@
+---
+- hosts: localhost
+  name: Stage instance(s)
+  tasks:
+    - name: 'Provisioning ec2-Instance-'
+      ec2:
+        count: 1
+        group_id: sg-0e1f3aad9b470b80f
+        image: ami-04d29b6f966df1537
+        instance_type: t2.micro
+        key_name: mykey-NV
+        region: us-east-1
+        vpc_subnet_id: subnet-00bebd8f6616120ad
+
+    - name: Ensure python-pycurl is installed
+      apt: pkg=python-pycurl state=installed
+
+    - name: Ensure Elasticsearch apt signing key is installed
+      apt_key: url=http://packages.elasticsearch.org/GPG-KEY-elasticsearch state=present
+
+    - name: Ensure Elasticsearch 0.90.x repository is installed
+      apt_repository: repo="deb http://packages.elasticsearch.org/elasticsearch/0.90/debian stable main" state=present update_cache=yes
+ 
+    - name: Ensure elasticsearch is installed
+      apt: pkg={{item}} state=installed
+      with_items:
+        - openjdk-8-jre
+        - elasticsearch
+        
+    - name: ensure elasticsearch is running
+      systemd: state=started name=elasticsearch   
+        
